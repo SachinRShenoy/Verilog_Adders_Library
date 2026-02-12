@@ -1,303 +1,320 @@
 # Verilog Adders Library  
 *A structured study and implementation of classical and parallel prefix adders*
 
+---
+
 ## Overview
 
-This repository is a systematic Verilog implementation of digital adders, starting from the most fundamental building blocks and scaling up to high-performance parallel prefix adders.
+This repository presents a systematic Verilog implementation of fundamental and high-performance digital adders.  
+The emphasis is on **architectural understanding**, not just functional correctness.
 
-The goal of this project is not just functional correctness, but architectural understanding:  
-how different adder families behave in terms of speed, area, power, scalability, and real-world usage.
+The project progresses from basic combinational building blocks to scalable, high-speed prefix adders used in modern processors.
 
-The design is parameterised using a central Verilog header file that defines the bit-width `N`.  
-With the exception of a fixed-width Carry Lookahead Adder (CLA), all adders automatically scale when `N` is modified.
+Key objectives:
 
-This makes the project suitable for:
-- Architecture comparison
-- Timing and synthesis studies
-- Academic reference
-- GATE and VLSI interview preparation
-- RTL design practice
+- Understand carry propagation mechanisms  
+- Compare speed vs area vs wiring trade-offs  
+- Practise clean RTL design and parameterisation  
+- Enable synthesis and timing exploration  
 
----
 
-## Comparative Summary
+## Architectural Trade-Off Summary
 
-| Adder Type        | Speed        | Area        | Power       | Scalability | Real-World Usage |
-|------------------|-------------|------------|------------|-------------|------------------|
-| Half Adder        | Very Slow   | Minimal    | Minimal    | None        | Educational only |
-| Full Adder        | Slow        | Small      | Low        | Building block | Everywhere |
-| Ripple Carry      | Slowest     | Smallest   | Lowest     | Excellent   | Low-end systems |
-| Carry Lookahead   | Fast (small N) | High     | High       | Poor        | Small ALUs |
-| Kogge-Stone       | Fastest     | Largest    | Highest    | Good        | High-end CPUs |
-| Brent-Kung        | Fast        | Medium     | Medium     | Excellent   | Very common |
-| Sklansky          | Fast        | Medium     | High       | Poor fan-out | Rare |
-| Han-Carlson       | Very Fast   | Medium-High | Medium     | Good        | Selective use |
+| Adder | Speed | Area | Wiring | Practical Use |
+|-------|------|------|--------|---------------|
+| HA | Very low | Minimal | Minimal | Educational |
+| FA | Low | Small | Minimal | Building block |
+| RCA | Slowest | Smallest | Minimal | Low-power paths |
+| CLA | Fast (small N) | High | Moderate | Small ALUs |
+| Kogge-Stone | Fastest | Largest | Very high | High-speed CPUs |
 
----
 
-## Project Structure and Bit-Width Control
+## Design Philosophy
 
-### Global Bit-Width Parameter
+Binary addition is dominated by **carry computation delay**.
 
-- A single Verilog header file defines:
-- N = adder bit width
-- All scalable adders use `N` consistently.
-- Changing `N` updates:
-- Ripple Carry Adder
-- Parallel Prefix Adders (Kogge-Stone, Brent-Kung, etc.)
-- The Carry Lookahead Adder is intentionally implemented as fixed 8-bit, to highlight practical limitations of CLA scalability.
+Different adder families represent different strategies:
 
-This reflects real design practice:  
-not every theoretically fast adder scales cleanly in silicon.
+- Let carry ripple (simple, slow)  
+- Predict carry (fast for small widths)  
+- Compute carry via prefix tree (fastest scalable approach)  
+
+This repository implements each category explicitly.
 
 ---
 
-## Adder Implementations Included
+## Bit-Width Control
 
-### 1. Half Adder
+### Global Parameterisation
 
-**Purpose**
-- Adds two single-bit operands
-- Produces Sum and Carry
+A central header file:
 
-**Why it exists**
-- Educational foundation
-- Used internally in larger adders
-- Not used directly in real processors
+### `params.vh`
 
-**Key points**
-- No carry-in
-- Minimal hardware
-- Zero scalability on its own
+defines the global design parameter:
+
+'N' → Adder bit-width.
+
+All scalable adders derive their width from **N**.
+
+Changing **N** automatically updates:
+
+- Ripple Carry Adder (RCA)  
+- Kogge-Stone Adder (generic)  
+- Any other parameterised designs  
 
 ---
 
-### 2. Full Adder
+## Fixed-Width Exception
 
-**Purpose**
-- Adds two bits plus a carry-in
-- Outputs Sum and Carry-out
+### `CLA_8bit.v`
 
-**Why it matters**
-- Core building block of ripple and array adders
-- Every multi-bit adder is ultimately composed of full adders
+`CLA_8bit.v` is intentionally **not parameterised**.
 
-**Trade-off**
-- Simple
-- Slow when chained linearly
+**Reason**
+
+Carry Lookahead logic scales poorly due to:
+
+- Rapid growth of logic terms  
+- Large fan-in  
+- Routing complexity  
+
+This reflects practical hardware design constraints.
+
+---
+
+## Project Structure
+```
+HA.v → Half Adder
+FA.v → Full Adder
+RCA.v → Ripple Carry Adder (parameterised)
+CLA_8bit.v → Carry Lookahead Adder (fixed 8-bit)
+KS.v → 4-bit Kogge-Stone Adder (manual topology)
+kogge_stone.v → Generic N-bit Kogge-Stone Adder
+All_adders.v → Integration / wrapper module(s)
+params.vh → Global parameters
+```
+---
+
+## Implemented Adders
+
+---
+
+### 1. Half Adder (HA)
+
+**Function**
+
+Adds two single-bit operands.
+
+**Outputs**
+
+- Sum  
+- Carry  
+
+**Role**
+
+- Educational foundation  
+- Used inside larger structures  
+
+**Limitations**
+
+- No carry-in  
+- Not scalable alone  
+
+---
+
+### 2. Full Adder (FA)
+
+**Function**
+
+Adds:
+
+- A  
+- B  
+- Carry-in  
+
+**Outputs**
+
+- Sum  
+- Carry-out  
+
+**Role**
+
+- Atomic arithmetic unit  
+- Basis of ripple architectures  
 
 ---
 
 ### 3. Ripple Carry Adder (RCA)
 
-**Concept**
-- Full adders connected in series
-- Carry ripples from LSB to MSB
+**Architecture**
+
+Chain of full adders.
+
+**Carry Behaviour**
+
+Sequential ripple from LSB → MSB.
 
 **Characteristics**
-- Delay increases linearly with bit-width
-- Very small area
-- Very low design complexity
 
-**Performance**
-- Slow for large `N`
-- Predictable timing
-- Easy to verify
+- Delay ∝ N  
+- Minimal area  
+- Very low complexity  
 
-**Real-world usage**
-- Small datapaths
-- Low-power microcontrollers
-- Non-critical arithmetic blocks
+**Use Cases**
+
+- Small datapaths  
+- Low-power designs  
+- Non-critical timing paths  
 
 ---
 
-### 4. Carry Lookahead Adder (CLA) (Fixed 8-bit)
+### 4. Carry Lookahead Adder (CLA) — Fixed 8-bit
 
-**Concept**
-- Computes carry signals using Generate (G) and Propagate (P)
-- Avoids waiting for ripple carry
+**Architecture**
 
-**Why fixed width**
-- Carry logic grows rapidly with bit-width
-- Wiring and logic fan-in become impractical
-- Demonstrates why CLAs are rarely used beyond small widths
+Carry computed using:
 
-**Performance**
-- Much faster than RCA (for small widths)
-- Area increases quickly
-- Power increases due to complex logic
+- Generate (G)  
+- Propagate (P)  
 
-**Real-world usage**
-- Small ALUs
-- Instruction decoders
-- Rarely used standalone for large adders
+**Strengths**
+
+- Faster than RCA (small widths)  
+
+**Weaknesses**
+
+- Logic explosion for large N  
+- High area & power  
+
+**Purpose in Repository**
+
+Demonstrate scalability limitations.
 
 ---
 
 ## Parallel Prefix Adders
 
-Parallel prefix adders compute carries using a tree structure rather than a chain.
+Prefix adders treat carry computation as a **prefix problem**.
 
-All prefix adders share the same three stages:
-1. Pre-processing (Generate and Propagate)
-2. Prefix computation (carry tree)
-3. Post-processing (sum generation)
+All follow three stages:
 
-What changes is how the tree is built.
+1. **Pre-processing** → Bit-level G/P  
+2. **Prefix Network** → Group G/P via tree  
+3. **Post-processing** → Carry & Sum  
 
 ---
 
-### 5. Kogge-Stone Adder (KSA)
+### 5. Kogge-Stone Adder (KS / KSA)
 
-**Design goal**
-- Minimum logic depth
-- Fastest carry computation
+#### a) `KS.v` (4-bit manual implementation)
+
+Explicit prefix topology showing:
+
+- Distance-1 stage  
+- Distance-2 stage  
+
+Useful for:
+
+- Learning prefix mechanics  
+- Debugging signal flow  
+
+---
+
+#### b) `kogge_stone.v` (Generic N-bit)
+
+**Features**
+
+- Fully parameterised  
+- Uses `$clog2(N)` stages  
+- Scales cleanly  
 
 **Characteristics**
-- Log₂(N) delay
-- Very high wiring complexity
-- Large area
-- High power consumption
+
+- Delay ≈ log₂(N)  
+- Very high wiring  
+- Large area  
 
 **Strengths**
-- Fastest adder in theory
-- Ideal for timing-critical paths
+
+- Fastest practical carry computation  
 
 **Weaknesses**
-- Routing congestion
-- Power hungry
-- Poor scalability in dense designs
 
-**Real-world usage**
-- High-performance CPUs
-- GPUs
-- Critical datapaths where speed dominates everything else
+- Routing congestion  
+- Higher switching power  
+
+**Use Cases**
+
+- High-performance ALUs  
+- Timing-critical datapaths  
 
 ---
 
-### 6. Brent-Kung Adder (BKA)
+## Why Prefix Adders Matter
 
-**Design goal**
-- Reduce area and wiring compared to Kogge-Stone
+Compared to CLA:
 
-**Characteristics**
-- Slightly higher delay than KSA
-- Roughly half the number of prefix nodes
-- Much cleaner routing
+| Aspect | CLA | Prefix Adders |
+|--------|-----|---------------|
+| Logic Growth | Rapid | Structured |
+| Scalability | Poor | Excellent |
+| Delay | Low (small N) | log₂(N) |
+| Practicality | Limited | Industry standard |
 
-**Strengths**
-- Excellent balance between speed and area
-- Easier to place and route
-- Lower power than KSA
-
-**Weaknesses**
-- Not the absolute fastest
-
-**Real-world usage**
-- Most commonly used prefix adder
-- Practical CPU and DSP designs
-- Industry-preferred architecture
+Prefix adders dominate modern CPU arithmetic design.
 
 ---
+## Learning Outcomes
 
-### 7. Sklansky Adder (Divide and Conquer)
+This repository enables:
 
-**Design goal**
-- Minimise logic depth
-
-**Characteristics**
-- Very low depth
-- High fan-out
-- Uneven load distribution
-
-**Strengths**
-- Fast on paper
-- Simple prefix structure
-
-**Weaknesses**
-- High fan-out causes timing issues
-- Poor electrical behaviour
-- Rarely used in real silicon
-
-**Real-world usage**
-- Academic studies
-- Rare in production designs
-
----
-
-### 8. Han-Carlson Adder
-
-**Design goal**
-- Hybrid between Kogge-Stone and Brent-Kung
-
-**Characteristics**
-- Balanced depth and area
-- Reduced wiring compared to KSA
-- Better timing than Brent-Kung
-
-**Strengths**
-- Good compromise architecture
-- Scales well
-- Balanced performance
-
-**Weaknesses**
-- More complex to implement
-
-**Real-world usage**
-- High-performance yet area-constrained designs
-- Less common than Brent-Kung, but very practical
-
-
-## How to Think About These Adders
-
-Here’s the thing that actually matters:
-
-- Ripple Carry  
-Choose when simplicity and power matter more than speed.
-
-- Carry Lookahead  
-Understand it conceptually. Avoid scaling it blindly.
-
-- Kogge-Stone  
-Choose when timing is everything and cost is secondary.
-
-- Brent-Kung  
-The most sensible real-world choice for wide adders.
-
-- Sklansky  
-Know it. Respect it. Rarely use it.
-
-- Han-Carlson  
-When you want smart compromises and clean timing.
-
----
-
-## Why This Repository Exists
-
-Most adder explanations stop at equations or diagrams.  
-This project connects theory, RTL design, and architectural trade-offs.
-
-By parameterising the bit-width and implementing multiple adder families side-by-side, this repository allows:
-- Direct comparison
-- Synthesis exploration
-- Timing and area intuition
-- Better design decisions
+- Understanding carry propagation strategies  
+- Prefix tree logic intuition  
+- RTL parameterisation practice  
+- Synthesis & timing comparison  
 
 ---
 
 ## Intended Audience
 
-- Digital design students
-- GATE aspirants
-- RTL engineers
-- Anyone who wants to understand why an adder is chosen, not just how it works
+- Digital design students  
+- RTL beginners → intermediate learners  
+- GATE / VLSI preparation  
+- Engineers revisiting arithmetic architectures  
+
+---
+
+## Suggested Experiments
+
+1. Change `N` in `params.vh`  
+2. Synthesize RCA vs Kogge-Stone  
+3. Compare:
+
+   - Logic depth  
+   - Resource usage  
+   - Fmax  
+
+4. Observe wiring growth in prefix designs  
 
 ---
 
 ## Future Extensions
 
-- Synthesis reports comparison
-- Power and timing plots
-- Testbench automation
-- Signed adders
-- Wallace and Dadda adders for multiplication
+- Brent-Kung Adder (generic)  
+- Han-Carlson hybrid prefix adder  
+- Automated testbenches  
+- Timing & area comparison reports  
+- Power estimation studies  
+- Signed / saturating adders  
+
+---
+
+## Final Note
+
+This project is designed as a **study-grade RTL library**, bridging:
+
+Theory → Architecture → Verilog → Synthesis
+
+Understanding *why* an adder is chosen is as important as knowing *how* it works.
+
