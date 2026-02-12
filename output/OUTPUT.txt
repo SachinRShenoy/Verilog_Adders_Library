@@ -1,0 +1,55 @@
+===== Starting All_adders Testbench =====
+
+--- Testing Sel = 000 ---
+? OK    Sel=000 A=00 B=00 Cin=0 -> Sum=00 Car=0
+? OK    Sel=000 A=01 B=01 Cin=0 -> Sum=02 Car=0
+? OK    Sel=000 A=0f B=01 Cin=0 -> Sum=10 Car=0
+? OK    Sel=000 A=55 B=aa Cin=0 -> Sum=ff Car=0
+? OK    Sel=000 A=ff B=01 Cin=0 -> Sum=00 Car=1
+? OK    Sel=000 A=ff B=ff Cin=1 -> Sum=ff Car=1
+? OK    Sel=000 A=24 B=81 Cin=1 -> Sum=a6 Car=0
+? OK    Sel=000 A=63 B=0d Cin=1 -> Sum=71 Car=0
+? OK    Sel=000 A=65 B=12 Cin=1 -> Sum=78 Car=0
+? OK    Sel=000 A=0d B=76 Cin=1 -> Sum=84 Car=0
+? OK    Sel=000 A=ed B=8c Cin=1 -> Sum=7a Car=1
+
+--- Testing Sel = 001 ---
+? OK    Sel=001 A=00 B=00 Cin=0 -> Sum=00 Car=0
+? OK    Sel=001 A=01 B=01 Cin=0 -> Sum=02 Car=0
+? OK    Sel=001 A=0f B=01 Cin=0 -> Sum=10 Car=0
+? OK    Sel=001 A=55 B=aa Cin=0 -> Sum=ff Car=0
+? OK    Sel=001 A=ff B=01 Cin=0 -> Sum=00 Car=1
+? OK    Sel=001 A=ff B=ff Cin=1 -> Sum=ff Car=1
+? OK    Sel=001 A=c6 B=c5 Cin=0 -> Sum=8b Car=1
+? OK    Sel=001 A=e5 B=77 Cin=0 -> Sum=5c Car=1
+? OK    Sel=001 A=8f B=f2 Cin=0 -> Sum=81 Car=1
+? OK    Sel=001 A=e8 B=c5 Cin=0 -> Sum=ad Car=1
+? OK    Sel=001 A=bd B=2d Cin=1 -> Sum=eb Car=0
+
+--- Testing Sel = 010 ---
+? OK    Sel=010 A=00 B=00 Cin=0 -> Sum=00 Car=0
+? OK    Sel=010 A=01 B=01 Cin=0 -> Sum=02 Car=0
+? OK    Sel=010 A=0f B=01 Cin=0 -> Sum=10 Car=0
+? OK    Sel=010 A=55 B=aa Cin=0 -> Sum=ff Car=0
+? OK    Sel=010 A=ff B=01 Cin=0 -> Sum=00 Car=1
+? OK    Sel=010 A=ff B=ff Cin=1 -> Sum=ff Car=1
+? OK    Sel=010 A=63 B=0a Cin=0 -> Sum=6d Car=0
+? OK    Sel=010 A=20 B=aa Cin=1 -> Sum=cb Car=0
+? OK    Sel=010 A=96 B=13 Cin=1 -> Sum=aa Car=0
+? OK    Sel=010 A=53 B=6b Cin=1 -> Sum=bf Car=0
+? OK    Sel=010 A=02 B=ae Cin=1 -> Sum=b1 Car=0
+
+--- Testing Sel = 011 ---
+? OK    Sel=011 A=00 B=00 Cin=0 -> Sum=00 Car=0
+? OK    Sel=011 A=01 B=01 Cin=0 -> Sum=02 Car=0
+? OK    Sel=011 A=0f B=01 Cin=0 -> Sum=00 Car=1
+? OK    Sel=011 A=55 B=aa Cin=0 -> Sum=0f Car=0
+? OK    Sel=011 A=ff B=01 Cin=0 -> Sum=00 Car=1
+? OK    Sel=011 A=ff B=ff Cin=1 -> Sum=0f Car=1
+? OK    Sel=011 A=cf B=23 Cin=0 -> Sum=02 Car=1
+? OK    Sel=011 A=ca B=3c Cin=0 -> Sum=06 Car=1
+? OK    Sel=011 A=8a B=41 Cin=0 -> Sum=0b Car=0
+? OK    Sel=011 A=78 B=89 Cin=1 -> Sum=02 Car=1
+? OK    Sel=011 A=b6 B=c6 Cin=0 -> Sum=0c Car=0
+
+===== Testbench Completed =====
