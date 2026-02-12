@@ -9,7 +9,13 @@ module RCA(input [`N-1:0] A,B,input Cin, output [`N-1:0] Sum,output Car);
 	genvar i;
 	generate
 	for (i=0;i<`N;i=i+1)begin:RCA_1
-		FA (.A(A[i]),.B(B[i]),.Cin(q[i]),.Sum(Sum[i]),.Car(q[i+1]));
+		FA fa_i (.A(A[i]),
+					.B(B[i]),
+					.Cin(q[i]),
+					.Sum(Sum[i]),
+					.Car(q[i+1])
+		);
+
 	end
 	endgenerate 
 	assign Car=q[`N];

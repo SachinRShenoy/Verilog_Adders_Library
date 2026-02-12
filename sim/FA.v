@@ -1,6 +1,9 @@
 `timescale 1ns/1ps
 
 module FA(input A,B,Cin, output Sum,Car);
-	assign Sum=A^B^Cin;
-	assign Car=(A&Cin)|(A&B)|(B&Cin);
+	wire G,P;
+	assign G = A & B;
+	assign P = A ^ B;
+	assign Sum = P ^ Cin;
+	assign Car = G | (P & Cin );
 endmodule
